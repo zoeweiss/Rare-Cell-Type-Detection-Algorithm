@@ -1,9 +1,10 @@
+#import data
 pcadata=read.table(file="~/Desktop/pcadata.txt",sep="\t",header=TRUE,row.names=1)
 
+#plot with PCA
 library(ggfortify)
 df <- t(pcadata)
 labels<-rep(1,dim(EditDist)[2])
-
 labels[c(which(colnames(EditDist)%in%one))]<-2
 labels[c(which(colnames(EditDist)%in%two))]<-3
 labels[c(which(colnames(EditDist)%in%three))]<-4
