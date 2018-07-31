@@ -1,0 +1,28 @@
+#Selecting High Homogeneity Index Genesrare_names = one
+rare_DM = DataMatrix[,colnames(DataMatrix) %in% rare_names]
+column_means = colSums(rare_DM)/nrow(rare_DM)
+column_diff = ((rare_DM - column_means)^2)/column_means
+diff_sums = as.matrix(rowSums(column_diff))
+edit = as.matrix(diff_sums[rownames(diff_sums) != "__no_feature",])
+edit1 = as.matrix(edit[rownames(edit) != "__alignment_not_unique",])
+edit2 = as.matrix(edit1[rownames(edit1) != "__ambiguous",])
+
+mean_diff_sums = mean(edit2)
+sd_diff_sums = sd(edit2)
+rare_genes1 = as.matrix(edit2)
+rare_genes = as.matrix(rare_genes1[abs(rare_genes1)>(abs(q*mean_diff_sums)),])
+#rare_genes = as.matrix(rare_genes1[rare_genes1>(q*mean_diff_sums),])
+#use above for better tsne
+
+
+sortedrg = order((rare_genes),decreasing = TRUE)
+a = as.matrix(rownames(rare_genes)[which(rare_genes >(rare_genes[sortedrg[20]] - 1))])
+a =substring(a,5)
+a = as.integer(a)
+brain=read.table(file="~/Desktop/Brain2.csv",sep=",",header=FALSE,row.names=1)
+rnb = as.matrix(rownames(brain))
+final_1 = rnb[a]
+#final_2 = rnb[a]
+#final_3 = rnb[a]
+#final_4 = rnb[a]
+ 
