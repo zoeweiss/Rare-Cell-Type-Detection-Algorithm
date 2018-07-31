@@ -1,1 +1,167 @@
-initialize
+b1=pcadata
+#rownames(b1) = paste("G",seq(1,dim(b1)[1],by=1),sep="")
+#colnames(b1) = paste("C",seq(1,dim(b1)[2],by=1),sep="")
+
+library(proxy)
+library(cluster)
+library(Deriv)
+library(optimx)
+library(ggplot2)
+library(mclust)
+library(clusteval)
+library(vegan)
+library(dbscan)
+library(tsne)
+library(svd)
+library(Rtsne)
+
+
+edited1= b1[ rowSums(b1)>=1, ]
+edited2 = edited1 [, colSums(edited1)>=1 ]
+DataMatrix = as.matrix(edited2) 
+
+sper = cor(DataMatrix, use="complete.obs", method="spearman") 
+
+distance = as.matrix(1-sper)
+SperMatrix <- as.matrix(sper) 
+SperMatrix[SperMatrix >= 1] <- 0
+
+EditDist = as.matrix(distance)
+
+ncl1 = round(((max(distance)-min(distance))/(sd(distance))), digits = 0)
+ncl = 2
+z=.9
+q=.5
+k.means.fit = kmeans(EditDist, ncl, iter.max = 30, nstart = 1,
+                     algorithm = c("Hartigan-Wong", "Lloyd", "Forgy",
+                                   "MacQueen"), trace=FALSE)
+clusters = k.means.fit$cluster
+clusterSize =k.means.fit$size
+
+Group_1 = as.matrix(clusters[clusters == 1]) 
+Group_2 = as.matrix(clusters[clusters == 2]) 
+Group_3 = as.matrix(clusters[clusters == 3]) 
+Group_4 = as.matrix(clusters[clusters == 4]) 
+Group_5 = as.matrix(clusters[clusters == 5]) 
+Group_6 = as.matrix(clusters[clusters == 6]) 
+Group_7 = as.matrix(clusters[clusters == 7]) 
+Group_8 = as.matrix(clusters[clusters == 8]) 
+
+#Group 1 Start
+
+C1 = EditDist[,colnames(EditDist) %in% rownames(Group_1)]
+C1 = C1[rownames(C1) %in% rownames(Group_1),]
+
+C1[!rowSums(!is.finite(C1)),]
+C1[!is.finite(C1)] <- 0
+
+mean_gs1 = rowSums(C1) / ncol(C1)
+cs_gs1.1 =  ((C1- mean_gs1)^2)
+cs_gs1= cs_gs1.1/mean_gs1
+cs_gs1[!rowSums(!is.finite(cs_gs1)),]
+cs_gs1[!is.finite(cs_gs1)] <- 0
+
+sum_C1 = colSums(cs_gs1)
+
+sum_mean_C1 = mean(sum_C1)
+sum_sd_C1 = sd(sum_C1)
+rare_C1 = as.matrix(which (sum_C1 >(sum_mean_C1+z*sum_sd_C1) ))
+#Group 1 end
+
+#Group 2 Start
+
+C2 = EditDist[,colnames(EditDist) %in% rownames(Group_2)]
+C2 = C2[rownames(C2) %in% rownames(Group_2),]
+
+C2[!rowSums(!is.finite(C2)),]
+C2[!is.finite(C2)] <- 0
+
+mean_gs2 = rowSums(C2) / ncol(C2)
+cs_gs2.1 =  ((C2- mean_gs2)^2)
+cs_gs2= cs_gs2.1/mean_gs2
+cs_gs2[!rowSums(!is.finite(cs_gs2)),]
+cs_gs2[!is.finite(cs_gs2)] <- 0
+
+sum_C2= colSums(cs_gs2)
+
+sum_mean_C2 = mean(sum_C2)
+sum_sd_C2 = sd(sum_C2)
+rare_C2 = as.matrix(which (sum_C2 >(sum_mean_C2+z*sum_sd_C2) ))
+#Group 2 end
+
+#high HI genes
+rare_names = rbind(rare_C1, rare_C2)
+rare_DM = DataMatrix[,colnames(DataMatrix) %in% rownames(rare_names)]
+column_means = colSums(rare_DM)/nrow(rare_DM)
+column_diff = ((rare_DM - column_means)^2)/column_means
+diff_sums = as.matrix(rowSums(column_diff))
+edit = as.matrix(diff_sums[rownames(diff_sums) != "__no_feature",])
+edit1 = as.matrix(edit[rownames(edit) != "__alignment_not_unique",])
+edit2 = as.matrix(edit1[rownames(edit1) != "__ambiguous",])
+mean_diff_sums = mean(edit2)
+sd_diff_sums = sd(edit2)
+rare_genes1 = as.matrix(edit2)
+rare_genes = as.matrix(rare_genes1[rare_genes1>(q*mean_diff_sums),])
+
+rareDM = DataMatrix[rownames(DataMatrix) %in% rownames(rare_genes1),]
+rareDMcorr = cor(rareDM, use="complete.obs", method="spearman") 
+distance = as.matrix(1-rareDMcorr)
+rareCorr <- as.matrix(rareDMcorr) 
+rareCorr[SperMatrix >= 1] <- 0
+
+rareDist = as.matrix(distance)
+
+rare1 = rareDist[,colnames(rareDist) %in% rownames(rare_names)]
+rare = rare1[rownames(rare1) %in% rownames(rare_names),]
+
+db = dbscan(rare,1.38, minPts =8, weights = NULL)
+dbdzero = as.matrix(rownames(rare)[which(db$cluster ==0)])
+rare_group0 = as.matrix(sprintf("Rare Group 1: %s", zero))
+one = as.matrix(rownames(rare)[which(db$cluster ==1)])
+rare_group1 = as.matrix(sprintf("Rare Group 1: %s", one))
+two = as.matrix(rownames(rare)[which(db$cluster ==2)])
+rare_group2 = as.matrix(sprintf("Rare Group 2: %s", two))
+three = as.matrix(rownames(rare)[which(db$cluster ==3)])
+rare_group3 = as.matrix(sprintf("Rare Group 3: %s", three))
+four = as.matrix(rownames(rare)[which(db$cluster ==4)])
+rare_group4 = as.matrix(sprintf("Rare Group 3: %s", three))
+five = as.matrix(rownames(rare)[which(db$cluster ==5)])
+rare_group5 = as.matrix(sprintf("Rare Group 5: %s", three))
+six = as.matrix(rownames(rare)[which(db$cluster ==6)])
+rare_group6 = as.matrix(sprintf("Rare Group 6: %s", four))
+rare_groups_names = rbind(one,two, three, four, five, six)
+rare_groups = rbind(rare_group1,rare_group2,rare_group3,rare_group4,rare_group5,rare_group6)
+
+#genes chosen
+legend("bottomright",leg=c("Rare Cluster 1","Rare Cluster 2"),fill=c("blue","purple"),cex = 0.75) 
+d <- density(rareDM)
+plot(d,main="Mouse Hematopoietic Genes Homogeneity Indexes ",xlab="Gene Homogeneity Index", ylab="Frequency")
+abline(v=2*mean(rareDM),col = 'red')
+
+#tsne
+pc<-propack.svd(t(EditDist),neig=30)
+pcloadings<-t(pc$d*t(pc$u))
+
+plot(pcloadings[,1],pcloadings[,2])
+
+Rtsne_1<-Rtsne(pcloadings,pca=FALSE,perplexity=15,check_duplicates=FALSE)
+plot(Rtsne_1$Y,pch=16,cex=0.7, res = 500)
+labels<-rep(1,dim(EditDist)[2])
+
+#regular
+labels[c(which(colnames(EditDist)%in%one))]<-2
+labels[c(which(colnames(EditDist)%in%two))]<-3
+labels[c(which(colnames(EditDist)%in%three))]<-4
+labels[c(which(colnames(EditDist)%in%four))]<-5
+labels[c(which(colnames(EditDist)%in%zero))]<-6
+
+mycols<-c("grey","blue","purple","red","orange", "pink", "black", "yellow", "navy", "white")
+#mycols<-c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7","#009E73", "white", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+dev.off()
+par(xpd = T, mar = par()$mar + c(0,0,0,7))
+d <- density(rareDM)
+plot(Rtsne_1$Y,pch=20,cex=0.6,col=mycols[as.numeric(labels)], xlab="Dimension 1",ylab="Dimension 2")
+legend("bottomright",leg=c("Rare Cluster 1","Rare Cluster 2") ,fill=c("blue","purple")  ,cex = 0.5,inset=c(-.5,0)) 
+#legend("bottomright",leg=c("Common Cluster 1","Common Cluster 2","Common Cluster 3","Common Cluster 4","Common Cluster 5","Common Cluster 6","Common Cluster 7","Common Cluster 8") ,fill=c(  "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7","#009E73"),cex = 0.5,inset=c(-.5,0)) 
+par(mar=c(5, 4, 4, 2) + 0.1)
