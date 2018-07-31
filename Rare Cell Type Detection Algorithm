@@ -1,6 +1,7 @@
+#import single-cell gene expression data
 b1=pcadata
-#rownames(b1) = paste("G",seq(1,dim(b1)[1],by=1),sep="")
-#colnames(b1) = paste("C",seq(1,dim(b1)[2],by=1),sep="")
+rownames(b1) = paste("G",seq(1,dim(b1)[1],by=1),sep="")
+colnames(b1) = paste("C",seq(1,dim(b1)[2],by=1),sep="")
 
 library(proxy)
 library(cluster)
@@ -15,22 +16,19 @@ library(tsne)
 library(svd)
 library(Rtsne)
 
-
+#calculate distance between cells
 edited1= b1[ rowSums(b1)>=1, ]
 edited2 = edited1 [, colSums(edited1)>=1 ]
 DataMatrix = as.matrix(edited2) 
-
 sper = cor(DataMatrix, use="complete.obs", method="spearman") 
-
 distance = as.matrix(1-sper)
 SperMatrix <- as.matrix(sper) 
 SperMatrix[SperMatrix >= 1] <- 0
-
 EditDist = as.matrix(distance)
 
-ncl1 = round(((max(distance)-min(distance))/(sd(distance))), digits = 0)
-ncl = 2
-z=.9
+#calculate number of large clusters and cluster cells
+ncl = round(((max(distance)-min(distance))/(sd(distance))), digits = 0)
+z=1
 q=.5
 k.means.fit = kmeans(EditDist, ncl, iter.max = 30, nstart = 1,
                      algorithm = c("Hartigan-Wong", "Lloyd", "Forgy",
@@ -38,58 +36,130 @@ k.means.fit = kmeans(EditDist, ncl, iter.max = 30, nstart = 1,
 clusters = k.means.fit$cluster
 clusterSize =k.means.fit$size
 
-Group_1 = as.matrix(clusters[clusters == 1]) 
-Group_2 = as.matrix(clusters[clusters == 2]) 
-Group_3 = as.matrix(clusters[clusters == 3]) 
-Group_4 = as.matrix(clusters[clusters == 4]) 
-Group_5 = as.matrix(clusters[clusters == 5]) 
-Group_6 = as.matrix(clusters[clusters == 6]) 
-Group_7 = as.matrix(clusters[clusters == 7]) 
-Group_8 = as.matrix(clusters[clusters == 8]) 
-
-#Group 1 Start
-
+#Detect rare cell types within each large cluster
+#Group 1
 C1 = EditDist[,colnames(EditDist) %in% rownames(Group_1)]
 C1 = C1[rownames(C1) %in% rownames(Group_1),]
-
 C1[!rowSums(!is.finite(C1)),]
 C1[!is.finite(C1)] <- 0
-
 mean_gs1 = rowSums(C1) / ncol(C1)
 cs_gs1.1 =  ((C1- mean_gs1)^2)
 cs_gs1= cs_gs1.1/mean_gs1
 cs_gs1[!rowSums(!is.finite(cs_gs1)),]
 cs_gs1[!is.finite(cs_gs1)] <- 0
-
 sum_C1 = colSums(cs_gs1)
-
 sum_mean_C1 = mean(sum_C1)
 sum_sd_C1 = sd(sum_C1)
 rare_C1 = as.matrix(which (sum_C1 >(sum_mean_C1+z*sum_sd_C1) ))
-#Group 1 end
 
-#Group 2 Start
 
+#Group 2
 C2 = EditDist[,colnames(EditDist) %in% rownames(Group_2)]
 C2 = C2[rownames(C2) %in% rownames(Group_2),]
-
 C2[!rowSums(!is.finite(C2)),]
 C2[!is.finite(C2)] <- 0
-
 mean_gs2 = rowSums(C2) / ncol(C2)
 cs_gs2.1 =  ((C2- mean_gs2)^2)
 cs_gs2= cs_gs2.1/mean_gs2
 cs_gs2[!rowSums(!is.finite(cs_gs2)),]
 cs_gs2[!is.finite(cs_gs2)] <- 0
-
-sum_C2= colSums(cs_gs2)
-
+sum_C2 = colSums(cs_gs2)
 sum_mean_C2 = mean(sum_C2)
-sum_sd_C2 = sd(sum_C2)
+sum_sd_C2= sd(sum_C2)
 rare_C2 = as.matrix(which (sum_C2 >(sum_mean_C2+z*sum_sd_C2) ))
-#Group 2 end
 
-#high HI genes
+
+#Group 3
+C3= EditDist[,colnames(EditDist) %in% rownames(Group_3)]
+C3= C3[rownames(C3) %in% rownames(Group_3),]
+C3[!rowSums(!is.finite(C3)),]
+C3[!is.finite(C3)] <- 0
+mean_gs3 = rowSums(C3) / ncol(C3)
+cs_gs3.1 =  ((C3- mean_gs3)^2)
+cs_gs3= cs_gs3.1/mean_gs3
+cs_gs3[!rowSums(!is.finite(cs_gs3)),]
+cs_gs3[!is.finite(cs_gs3)] <- 0
+sum_C3= colSums(cs_gs3)
+sum_mean_C3 = mean(sum_C3)
+sum_sd_C3= sd(sum_C3)
+rare_C3 = as.matrix(which (sum_C3 >(sum_mean_C3+z*sum_sd_C3) ))
+
+#Group 4
+C4= EditDist[,colnames(EditDist) %in% rownames(Group_4)]
+C4= C4[rownames(C4) %in% rownames(Group_4),]
+C4[!rowSums(!is.finite(C4)),]
+C4[!is.finite(C4)] <- 0
+mean_gs4 = rowSums(C4) / ncol(C4)
+cs_gs4.1 =  ((C4- mean_gs4)^2)
+cs_gs4= cs_gs4.1/mean_gs4
+cs_gs4[!rowSums(!is.finite(cs_gs4)),]
+cs_gs4[!is.finite(cs_gs4)] <- 0
+sum_C4= colSums(cs_gs4)
+sum_mean_C4 = mean(sum_C4)
+sum_sd_C4= sd(sum_C4)
+rare_C4 = as.matrix(which (sum_C4 >(sum_mean_C4+z*sum_sd_C4) ))
+
+#Group 5
+C5= EditDist[,colnames(EditDist) %in% rownames(Group_5)]
+C5= C5[rownames(C5) %in% rownames(Group_5),]
+C5[!rowSums(!is.finite(C5)),]
+C5[!is.finite(C5)] <- 0
+mean_gs5 = rowSums(C5) / ncol(C5)
+cs_gs5.1 =  ((C5- mean_gs5)^2)
+cs_gs5= cs_gs5.1/mean_gs5
+cs_gs5[!rowSums(!is.finite(cs_gs5)),]
+cs_gs5[!is.finite(cs_gs5)] <- 0
+sum_C5= colSums(cs_gs5)
+sum_mean_C5 = mean(sum_C5)
+sum_sd_C5= sd(sum_C5)
+rare_C5= as.matrix(which (sum_C5 >(sum_mean_C5+z*sum_sd_C5) ))
+
+#Group 6
+C6= EditDist[,colnames(EditDist) %in% rownames(Group_6)]
+C6= C6[rownames(C6) %in% rownames(Group_6),]
+C6[!rowSums(!is.finite(C6)),]
+C6[!is.finite(C6)] <- 0
+mean_gs6 = rowSums(C6) / ncol(C6)
+cs_gs6.1 =  ((C6- mean_gs6)^2)
+cs_gs6= cs_gs6.1/mean_gs6
+cs_gs6[!rowSums(!is.finite(cs_gs6)),]
+cs_gs6[!is.finite(cs_gs6] <- 0
+sum_C6= colSums(cs_gs6)
+sum_mean_C6 = mean(sum_C6)
+sum_sd_C6= sd(sum_C6)
+rare_C6 = as.matrix(which (sum_C6>(sum_mean_C6+z*sum_sd_C6) ))
+
+#Group 7
+C7= EditDist[,colnames(EditDist) %in% rownames(Group_7)]
+C7= C7[rownames(C7) %in% rownames(Group_7),]
+C7[!rowSums(!is.finite(C7)),]
+C7[!is.finite(C7)] <- 0
+mean_gs7 = rowSums(C7) / ncol(C7)
+cs_gs7.1 =  ((C7- mean_gs7)^2)
+cs_gs7= cs_gs7.1/mean_gs7
+cs_gs7[!rowSums(!is.finite(cs_gs7)),]
+cs_gs7[!is.finite(cs_gs7] <- 0
+sum_C7= colSums(cs_gs7)
+sum_mean_C7 = mean(sum_C7)
+sum_sd_C7= sd(sum_C7)
+rare_C7= as.matrix(which (sum_C7>(sum_mean_C7+z*sum_sd_C7) ))
+
+#Group 8
+C8= EditDist[,colnames(EditDist) %in% rownames(Group_8)]
+C8= C8[rownames(C8) %in% rownames(Group_8),]
+C8[!rowSums(!is.finite(C8)),]
+C8[!is.finite(C8)] <- 0
+mean_gs8 = rowSums(C8) / ncol(C8)
+cs_gs8.1 =  ((C8- mean_gs8)^2)
+cs_gs8= cs_gs8.1/mean_gs8
+cs_gs8[!rowSums(!is.finite(cs_gs8)),]
+cs_gs8[!is.finite(cs_gs8] <- 0
+sum_C8= colSums(cs_gs8)
+sum_mean_C8 = mean(sum_C8)
+sum_sd_C8= sd(sum_C8)
+rare_C8= as.matrix(which (sum_C8>(sum_mean_C8+z*sum_sd_C8) ))
+
+#Identify high HI genes
 rare_names = rbind(rare_C1, rare_C2)
 rare_DM = DataMatrix[,colnames(DataMatrix) %in% rownames(rare_names)]
 column_means = colSums(rare_DM)/nrow(rare_DM)
@@ -102,18 +172,16 @@ mean_diff_sums = mean(edit2)
 sd_diff_sums = sd(edit2)
 rare_genes1 = as.matrix(edit2)
 rare_genes = as.matrix(rare_genes1[rare_genes1>(q*mean_diff_sums),])
-
 rareDM = DataMatrix[rownames(DataMatrix) %in% rownames(rare_genes1),]
 rareDMcorr = cor(rareDM, use="complete.obs", method="spearman") 
 distance = as.matrix(1-rareDMcorr)
 rareCorr <- as.matrix(rareDMcorr) 
 rareCorr[SperMatrix >= 1] <- 0
-
 rareDist = as.matrix(distance)
-
 rare1 = rareDist[,colnames(rareDist) %in% rownames(rare_names)]
 rare = rare1[rownames(rare1) %in% rownames(rare_names),]
 
+#Cluster potential rare cells into rare cell types
 db = dbscan(rare,1.38, minPts =8, weights = NULL)
 dbdzero = as.matrix(rownames(rare)[which(db$cluster ==0)])
 rare_group0 = as.matrix(sprintf("Rare Group 1: %s", zero))
@@ -132,23 +200,19 @@ rare_group6 = as.matrix(sprintf("Rare Group 6: %s", four))
 rare_groups_names = rbind(one,two, three, four, five, six)
 rare_groups = rbind(rare_group1,rare_group2,rare_group3,rare_group4,rare_group5,rare_group6)
 
-#genes chosen
+
+#Plot tSNE and high homogeneity index plots
 legend("bottomright",leg=c("Rare Cluster 1","Rare Cluster 2"),fill=c("blue","purple"),cex = 0.75) 
 d <- density(rareDM)
 plot(d,main="Mouse Hematopoietic Genes Homogeneity Indexes ",xlab="Gene Homogeneity Index", ylab="Frequency")
 abline(v=2*mean(rareDM),col = 'red')
-
-#tsne
 pc<-propack.svd(t(EditDist),neig=30)
 pcloadings<-t(pc$d*t(pc$u))
-
 plot(pcloadings[,1],pcloadings[,2])
-
 Rtsne_1<-Rtsne(pcloadings,pca=FALSE,perplexity=15,check_duplicates=FALSE)
 plot(Rtsne_1$Y,pch=16,cex=0.7, res = 500)
 labels<-rep(1,dim(EditDist)[2])
 
-#regular
 labels[c(which(colnames(EditDist)%in%one))]<-2
 labels[c(which(colnames(EditDist)%in%two))]<-3
 labels[c(which(colnames(EditDist)%in%three))]<-4
@@ -156,12 +220,12 @@ labels[c(which(colnames(EditDist)%in%four))]<-5
 labels[c(which(colnames(EditDist)%in%zero))]<-6
 
 mycols<-c("grey","blue","purple","red","orange", "pink", "black", "yellow", "navy", "white")
-#mycols<-c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7","#009E73", "white", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+mycols2<-c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7","#009E73", "white", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 dev.off()
 par(xpd = T, mar = par()$mar + c(0,0,0,7))
 d <- density(rareDM)
 plot(Rtsne_1$Y,pch=20,cex=0.6,col=mycols[as.numeric(labels)], xlab="Dimension 1",ylab="Dimension 2")
 legend("bottomright",leg=c("Rare Cluster 1","Rare Cluster 2") ,fill=c("blue","purple")  ,cex = 0.5,inset=c(-.5,0)) 
-#legend("bottomright",leg=c("Common Cluster 1","Common Cluster 2","Common Cluster 3","Common Cluster 4","Common Cluster 5","Common Cluster 6","Common Cluster 7","Common Cluster 8") ,fill=c(  "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7","#009E73"),cex = 0.5,inset=c(-.5,0)) 
+legend2("bottomright",leg=c("Common Cluster 1","Common Cluster 2","Common Cluster 3","Common Cluster 4","Common Cluster 5","Common Cluster 6","Common Cluster 7","Common Cluster 8") ,fill=c(  "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7","#009E73"),cex = 0.5,inset=c(-.5,0)) 
 par(mar=c(5, 4, 4, 2) + 0.1)
