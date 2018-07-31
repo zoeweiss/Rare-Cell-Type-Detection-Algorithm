@@ -1,0 +1,24 @@
+#coordiantes2 is the location data, with column V3 as x and V4 as y
+co = coordinates2
+#This renames each row to be cell numbers
+rownames(co) = paste("C",seq(1,dim(co)[1],by=1),sep="")
+# selects the coordinates for the cells in cluster 4, which was calculated
+#by the main algorithm 
+co1 = co[rownames(co) %in% four,]
+#finds euclidian distances between cells
+co1.dists <- as.matrix(dist(cbind(co1$V3, co1$V4)))
+#takes one over the distances
+co1.dists.inv <- 1/co1.dists
+#sets the diagonals equal to 0; the distance between a cell and itself is 0
+diag(co1.dists.inv) <- 0
+
+#runs Moran's I with input = x coordinates, and weights = distance inverses
+library(lctools)
+co1.dists.inv = co1.dists.inv/sum(co1.dists.inv)
+co1.dists.inv=co1.dists.inv*co1.dists.inv
+
+a = moransI.w(co1$V3, co1.dists.inv)
+MI = a$Morans.I
+library(spdep)
+b = Moran.I(co1$V3, co1.dists.inv)
+
