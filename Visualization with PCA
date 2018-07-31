@@ -1,0 +1,21 @@
+pcadata=read.table(file="~/Desktop/pcadata.txt",sep="\t",header=TRUE,row.names=1)
+
+library(ggfortify)
+df <- t(pcadata)
+labels<-rep(1,dim(EditDist)[2])
+
+labels[c(which(colnames(EditDist)%in%one))]<-2
+labels[c(which(colnames(EditDist)%in%two))]<-3
+labels[c(which(colnames(EditDist)%in%three))]<-4
+labels[c(which(colnames(EditDist)%in%four))]<-5
+labels[c(which(colnames(EditDist)%in%five))]<-6
+labels[c(which(colnames(EditDist)%in%six))]<-7
+labels[c(which(colnames(EditDist)%in%seven))]<-8
+labels[c(which(colnames(EditDist)%in%eight))]<-9
+labels[c(which(colnames(EditDist)%in%nine))]<-10
+labels[c(which(colnames(EditDist)%in%ten))]<-11
+labels[c(which(colnames(EditDist)%in%eleven))]<-12
+labels[c(which(colnames(EditDist)%in%twelve))]<-13
+#labels[c(which(colnames(EditDist)%in%zero))]<-6
+autoplot(prcomp(df),col=mycols[as.numeric(labels)] )
+ 
