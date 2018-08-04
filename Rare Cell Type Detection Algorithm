@@ -1,3 +1,5 @@
+#A Universal Algorithm to Detect Rare or Novel Cell Types in High-Throughput Single-Cell Gene Expression Data
+
 #import single-cell gene expression data
 b1=pcadata
 rownames(b1) = paste("G",seq(1,dim(b1)[1],by=1),sep="")
